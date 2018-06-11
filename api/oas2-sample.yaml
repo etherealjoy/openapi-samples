@@ -1,0 +1,232 @@
+---
+# This is a sample Swagger spec
+ 
+swagger: "2.0"
+info:
+  description: Application Description
+  version: 1.0.0
+  title: Application
+  
+host: 0.0.0.0:8080
+basePath: /api/v1.0
+schemes:
+- http
+
+tags:
+- name: ApplicationResources
+  x-displayName: "ApplicationResources"
+
+
+- name : ApplicationLifeCycle
+  x-displayName : "ApplicationLifeCycle"
+
+
+- name: ApplicationTestConfiguration
+  x-displayName : "ApplicationTestConfiguration"
+
+    
+- name: ApplicationEndpointTest
+  x-displayName: "ApplicationEndpointTest"
+
+    
+paths:
+  /default/Resources/{id}: 
+    post:
+      tags:
+      - ApplicationResources      
+      operationId: resourceStatusSet
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: "exclusive"
+        in: "query"
+        type: "boolean"
+        default: false
+      - name: id
+        in: "path"
+        required: true
+        type: integer
+        format: int32
+      - name: "body"
+        in: "body"
+        schema:
+          $ref: "#/definitions/ResourceRequest"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            $ref: "#/definitions/ResourceOperationsStatus"
+        404:
+          description: "The request was not successfully executed."
+          schema:
+            $ref: "#/definitions/ErrorSts"
+    get:
+      tags:
+      - ApplicationResources
+      operationId: resourceStatusGet
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            allOf:
+              - $ref: "#/definitions/Resource"
+              - type: "object"
+                properties:
+                  AddIn:
+                    type: "object"
+                    additionalProperties:
+                      type: "string"
+              
+        404:
+          description: "The request was not successfully executed."        
+          schema:
+            $ref: "#/definitions/ErrorSts"  
+              
+  /default/ApiTestSetup: 
+    post: 
+      tags: 
+      - ApplicationTestConfiguration     
+      operationId : apiTestConfigurationSet
+      consumes:
+      - application/json
+      parameters : 
+      - name : "body"
+        in : "body"
+        required: true
+        schema: 
+          type: "array"
+          items:
+            $ref: "#/definitions/TestEndPointConfig"
+      responses:
+        200:
+          description: "Successful response"
+        400:
+          description: "The request was not successfully executed." 
+    get:
+      tags:
+      - ApplicationTestConfiguration
+      operationId: apiTestConfigurationGet
+      produces:
+      - application/json      
+      responses:
+        200:
+          description: "Successful response"
+          schema: 
+            $ref: "#/definitions/TestEndPointConfigResponse"          
+        400:
+          description: "The request was not successfully executed."           
+  
+  
+definitions:
+  Options:
+    type: "object"
+    properties:
+      Config:
+        type: "object"
+        additionalProperties:
+          type: "string"
+
+  Resource:
+    required:
+      - id
+    type: object  
+    properties:
+      id:
+        type: integer
+        format: int32
+      name:
+        type: string 
+      type:
+        type: string
+      options:
+        $ref: "#/definitions/Options" 
+
+  ResourceOperations:
+    type: "object"
+    additionalProperties:
+      type: "object"
+      additionalProperties:
+        type: "string"
+      
+  ResourceOperationsStatus:
+    type: "object"
+    additionalProperties:
+      type: "string"
+                
+  ResourceRequest:
+    allOf:
+    - $ref: "#/definitions/Resource"
+    - type: "object"
+      required:
+      - handle
+      properties:
+        handle:
+          type : "string"
+          x-nullable: false
+        requestCode:
+          type: integer
+          format: int32
+        operations:
+          $ref: "#/definitions/ResourceOperations"
+        payload:
+          type: array
+          items:
+            type: integer
+            format: int32 
+        mapargs:
+          type: "object"
+          additionalProperties:
+            type: "object"
+            additionalProperties:
+              type: "string" 
+        maparrays:
+          type: "object"
+          additionalProperties:
+            type: "object"
+            additionalProperties:
+              type: "string"        
+        arraymaps:        
+          type: "object"
+          additionalProperties:
+            type: "array"
+            items:
+              type: "string" 
+        arrayargs:
+          type: "array"
+          items:
+            type: "array"
+            items:
+              $ref: "#/definitions/Options" 
+  
+  ErrorSts:
+    required:
+      - code
+    type : object   
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string  
+       
+  TestEndPointConfig : 
+    type : "object"
+    additionalProperties :
+      type: "string"
+      
+  TestEndPointConfigResponse:
+    type: array
+    items:
+      $ref: "#/definitions/TestEndPointConfig" 
+
+      
